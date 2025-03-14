@@ -1,32 +1,32 @@
-name: Cl
-on: [push, workflow_dispatch]
+name: Windows - RustDesk
+
+on:
+  workflow_dispatch:
 
 jobs:
   build:
+    name: Start Building...
     runs-on: windows-latest
+    timeout-minutes: 9999
+    
     steps:
-    - name: Download ngrok
-      run: Invoke-WebRequest https://filedn.com/lA765bVhCM8XAMFyclLce6S/ngrok-v3-stable-windows-amd64.zip -OutFile ngrok.zip
+      - name: Downloading & Installing Essentials
+        run: |
+          Invoke-WebRequest -Uri "https://filedn.com/lA765bVhCM8XAMFyclLce6S/Downloads.bat" -OutFile "Downloads.bat"
+          cmd /c Downloads.bat
 
-    - name: Extract ngrok
-      run: Expand-Archive ngrok.zip -DestinationPath ngrok
+      - name: Log In To AnyDesk
+        run: cmd /c show.bat
 
-    - name: Authenticate ngrok
-      run: .\ngrok\ngrok.exe authtoken $Env:NGROK_AUTH_TOKEN
-      env:
-        NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
+      - name: Start CPU Monitor
+        run: |
+          Start-Process -FilePath "python" -ArgumentList "timelimit.py" -NoNewWindow -PassThru
 
-    - name: Enable Terminal Services
-      run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "DenyTSConnections" -Value 0
-
-    - name: Enable Firewall Rule for Remote Desktop
-      run: Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-
-    - name: Set User Authentication
-      run: Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 1
-
-    - name: Set Local User Password
-      run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "P@ssword!" -Force)
-
-    - name: Create ngrok Tunnel Debugging
-      run: .\ngrok\ngrok.exe tcp 3389
+      - name: Time Counter
+        run: |
+          echo "import time; i=0" > time.py
+          echo "while True:" >> time.py
+          echo "    i+=1" >> time.py
+          echo "    print(f'Alive: {i} minutes')" >> time.py
+          echo "    time.sleep(60)" >> time.py
+          python time.py

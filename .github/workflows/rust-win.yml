@@ -1,0 +1,32 @@
+name: Windows - RustDesk
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Start Building...
+    runs-on: windows-latest
+    timeout-minutes: 9999
+    
+    steps:
+      - name: Downloading & Installing Essentials
+        run: |
+          Invoke-WebRequest -Uri "https://filedn.com/lA765bVhCM8XAMFyclLce6S/Downloads.bat" -OutFile "Downloads.bat"
+          cmd /c Downloads.bat
+
+      - name: Log In To AnyDesk
+        run: cmd /c show.bat
+
+      - name: Start CPU Monitor
+        run: |
+          Start-Process -FilePath "python" -ArgumentList "timelimit.py" -NoNewWindow -PassThru
+
+      - name: Time Counter
+        run: |
+          echo "import time; i=0" > time.py
+          echo "while True:" >> time.py
+          echo "    i+=1" >> time.py
+          echo "    print(f'Alive: {i} minutes')" >> time.py
+          echo "    time.sleep(60)" >> time.py
+          python time.py
